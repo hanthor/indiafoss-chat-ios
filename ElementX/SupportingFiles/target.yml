@@ -233,6 +233,7 @@ targets:
     - target: MatrixRustSDKMocks
     - package: MatrixRustSDK
       embed: true
+    - package: NeutrinoKit
     - package: Compound
     - package: BuildExtensions
       product: Macros

@@ -1,0 +1,32 @@
+# Prove the fork compiles with the mesh medium wired in: xcodegen with the
+# NeutrinoKit package, then a signing-free simulator build of the app target.
+# Not a test run — the cheapest signal that the embedding is structurally
+# sound, so the expensive work (login flow, entitlement, device) happens on a
+# branch that already builds.
+name: Neutrino embed build
+on:
+  workflow_dispatch:
+  push:
+    branches: [neutrino-embed]
+permissions: {}
+concurrency:
+  group: neutrino-build-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    name: Simulator build with NeutrinoKit
+    runs-on: macos-26
+    timeout-minutes: 90
+    steps:
+      - uses: nschloe/action-cached-lfs-checkout@385a8ecc719e50b8c71af6ab01a624b486b7c3bc # v1.2.5
+        with:
+          persist-credentials: false
+      - name: Setup environment
+        run: source ci_scripts/ci_common.sh && setup_github_actions_environment
+      - name: Build for simulator
+        run: |
+          xcodebuild -project ElementX.xcodeproj \
+            -scheme ElementX \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tail -80

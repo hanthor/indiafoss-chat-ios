@@ -71,6 +71,11 @@ include:
 # - path: MyAppVariant/override.yml
 
 packages:
+  # The mesh medium: the embedded Neutrino homeserver + iroh transport,
+  # vendored as a local package whose binary target is the XCFramework
+  # published by hanthor/neutrino-iroh's Apple workflow. See NeutrinoKit/.
+  NeutrinoKit:
+    path: NeutrinoKit
   # Element/Matrix dependencies
   MatrixRustSDK:
     url: https://github.com/element-hq/matrix-rust-components-swift
