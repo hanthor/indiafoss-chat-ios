@@ -65,9 +65,17 @@ class UserSessionStore: UserSessionStoreProtocol {
         case .failure(let error):
             MXLog.error("Failed restoring login with error: \(error)")
             
-            // On any restoration failure reset the token and restart
-            keychainController.removeRestorationTokenForUsername(credentials.userID)
-            credentials.restorationToken.sessionDirectories.delete()
+            // Only a session whose crypto store is already gone is beyond restoring: iOS moved
+            // the app without its container, so the token points at nothing and is dropped.
+            // Every other failure (a store the SDK could not open, a transport that is not
+            // up yet, a passphrase the keychain returned late) is transient from here and
+            // must not cost the attendee their keys: keep the token and the directories,
+            // report the failure, and let the next launch retry. A session that fails to
+            // start is a state to report, not a reason to erase.
+            if !credentials.restorationToken.sessionDirectories.isNonTransientUserDataValid() {
+                keychainController.removeRestorationTokenForUsername(credentials.userID)
+                credentials.restorationToken.sessionDirectories.delete()
+            }
             
             return .failure(error)
         }
