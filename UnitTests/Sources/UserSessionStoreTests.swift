@@ -84,8 +84,12 @@ struct UserSessionStoreTests {
             return
         }
         
-        // Then the credentials should have been discarded.
-        #expect(keychainController.removeRestorationTokenForUsernameReceivedInvocations == [credentials.userID])
+        // Then the failure is reported but nothing is deleted: a client that cannot be
+        // built right now is not proof that the account is gone, and the crypto store
+        // must survive for the next attempt.
+        #expect(keychainController.removeRestorationTokenForUsernameReceivedInvocations.isEmpty)
+        #expect(sessionDirectories.isNonTransientUserDataValid())
+        #expect(FileManager.default.directoryExists(at: sessionDirectories.cacheDirectory))
     }
     
     @Test

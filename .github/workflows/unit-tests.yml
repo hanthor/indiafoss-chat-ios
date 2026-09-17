@@ -58,14 +58,16 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload coverage to Codecov
-        # Skip if not successful and in forks
+        # Skip if not successful and in forks, and never fail the job where no
+        # CODECOV_TOKEN is configured: Codecov refuses tokenless uploads from a
+        # protected branch, and a missing token says nothing about the tests.
         if: ${{ success() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
         with:
           report_type: coverage
           files: test_output/unit-cobertura.xml,test_output/preview-cobertura.xml
           disable_search: true
-          fail_ci_if_error: true
+          fail_ci_if_error: ${{ secrets.CODECOV_TOKEN != '' }}
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: unittests
 
